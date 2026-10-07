@@ -68,7 +68,7 @@ Provides a high-level view of Accounts Receivable performance, including:
 * Collection performance
 * Key AR trends and management indicators
 
-![Executive Overview](Screenshots/Page1_Executive_Overview.png)
+![Executive Overview](Screenshots/01_Executive_Overview.png)
 
 ---
 
@@ -85,7 +85,7 @@ Key analysis includes:
 * Customer payment behavior
 * Collection performance by customer
 
-![Customer Deep Dive](Screenshots/Page2_Customer_Deep_Dive.png)
+![Customer Deep Dive](Screenshots/02_Customer_Deep_Dive.png)
 
 ---
 
@@ -102,7 +102,7 @@ Key analysis includes:
 * Collection and resolution activity
 * Operational areas requiring attention
 
-![Dispute Operations](Screenshots/Page3_Dispute_Operations.png)
+![Dispute Operations](Screenshots/03_Dispute_Operations.png)
 
 ---
 
