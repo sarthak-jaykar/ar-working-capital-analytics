@@ -1,283 +1,150 @@
 # Accounts Receivable & Working Capital Analytics
 
-![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-yellow)
-![Python](https://img.shields.io/badge/Python-EDA-blue)
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-blue)
-![Finance](https://img.shields.io/badge/Domain-Finance-green)
+### Collections, Overdue Exposure, Customer Risk and Dispute Operations Dashboard
 
-## Overview
+![Power BI](https://img.shields.io/badge/Power%20BI-Dashboard-F2C811?logo=powerbi&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white)
+![NumPy](https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white)
+![Domain](https://img.shields.io/badge/Domain-FIN-success)
+![Data Model](https://img.shields.io/badge/Data%20Model-Relational-blue)
 
-This project presents a simulated **Accounts Receivable (AR) and Working Capital Analytics solution** designed to help finance teams monitor receivables, identify collection risks, analyze customer payment behavior, and support working-capital decisions.
+[![Dashboard Preview](screenshots/01_Executive_Overview.png)](screenshots/01_Executive_Overview.png)
 
-The project combines **Python-based data preparation and exploratory analysis with Power BI reporting**, transforming transactional AR data into an interactive management dashboard.
-
-The solution focuses on three key areas:
-
-* Executive AR and working-capital performance
-* Customer-level receivables and collection analysis
-* Dispute and collection operations
-
-> **Portfolio project:** Built using synthetic data and simulated business scenarios for analytical and learning purposes.
+*Select the image to view it at full size.*
 
 ---
 
-## Business Objectives
+## Project Overview
 
-The dashboard is designed to help finance and collections teams:
+Finance and collections teams need more than a total outstanding balance. They need to know what has been billed and collected, how much receivable is overdue and how old it is, which customers and risk tiers carry the exposure, and how much cash is tied up in disputes.
 
-* Monitor total invoiced, collected, and outstanding receivables
-* Track overdue and aging receivables
-* Analyze customer payment behavior
-* Identify high-risk and high-exposure customers
-* Monitor collection performance
-* Analyze invoice disputes and their operational impact
-* Identify receivables requiring collection attention
-* Support working-capital and cash-flow improvement decisions
+This project simulates two years of invoicing and payments for a company with 150 customers and builds a three-page Power BI dashboard on top of it. The dashboard supports three decisions: where collections effort should go, whether the customer risk tiers are working, and which dispute owners need to resolve their queues.
+
+### Data Source
+
+**Data Source:** Synthetically generated for this project using Python with a fixed random seed, so results are reproducible. The company, records, and business scenarios are fictional and are intended for learning and portfolio demonstration.
 
 ---
 
-## Key Business Questions
+## Key Metrics (as of 31 December 2025)
 
-The analysis addresses questions such as:
-
-* How much receivables exposure is currently outstanding?
-* What proportion of receivables is overdue?
-* Which customers contribute the highest outstanding balances?
-* Which customers require collection attention?
-* What does the receivables aging profile look like?
-* Which payment behaviors indicate collection risk?
-* How significant are invoice disputes?
-* Which dispute categories require operational attention?
-* Where should collection teams prioritize their efforts?
+| Total Invoiced | Collected to Date | AR Outstanding | Overdue AR | DSO | Disputed AR |
+| --- | --- | --- | --- | --- | --- |
+| **$115.33M** | **$98.81M** (85.7%) | **$16.52M** | **$7.73M** (46.8%) | **104.7 days** | **$1.64M** (192 disputes) |
 
 ---
 
-# Dashboard
+## Key Findings
 
-The Power BI solution contains three analytical pages.
+1. **Most billing has been collected, but a large balance remains open.** $98.81M of $115.33M was collected by 31 December 2025, leaving $16.52M outstanding. Of that, $8.80M is current and $7.73M is overdue.
+2. **Overdue balances are concentrated in very old invoices.** The 90+ day bucket holds $5.65M: 34% of outstanding AR and 73% of overdue AR. The 1–30, 31–60 and 61–90 day buckets hold $1.06M, $0.55M and $0.46M.
+3. **Customer risk tiers do not match where overdue money sits.** Low-risk customers hold $5.49M of overdue AR (71%). High-risk customers hold $0.56M (7%), though they are 21 of the 150 customers. In this dataset, the risk tiers do not predict late payment.
+4. **Overdue exposure is spread across customers.** 148 of 150 customers have at least one overdue invoice, so the overdue-customer count does not rank accounts. The three largest overdue balances are Client Corp 0011 ($268K), 0126 ($260K) and 0037 ($253K).
+5. **Open disputes tie up $1.64M across 192 invoices.** Quality Assurance (damaged or defective goods) holds $439K (27%). Billing & Finance (pricing and billing errors) holds $338K (21%). Sales Operations holds $296K (18%), Supply Chain & Logistics $289K (18%), and Legal & Commercial $281K (17%).
+6. **DSO is 104.7 days** against standard payment terms of 30 to 90 days.
 
-## 1. Executive Overview
-
-Provides a high-level view of Accounts Receivable performance, including:
-
-* Total invoiced amount
-* Amount collected
-* Outstanding receivables
-* Overdue receivables
-* Receivables aging
-* Collection performance
-* Key AR trends and management indicators
-
-![Executive Overview](Screenshots/01_Executive_Overview.png)
+**What these findings do not show:** Results come from simulated behaviour. Every open dispute is unpaid by construction, so the disputed-AR figure partly reflects the data design rather than an observed pattern. The risk-tier finding describes this dataset, not real customers.
 
 ---
 
-## 2. Customer Deep Dive
+## Business Problem and Objectives
 
-Provides customer-level analysis to identify receivables concentration and collection priorities.
+Accounts receivable teams need to understand exposure, not only totals. The project aims to:
 
-Key analysis includes:
-
-* Customer outstanding balances
-* Overdue exposure
-* Aging distribution
-* Top delinquent accounts
-* Customer payment behavior
-* Collection performance by customer
-
-![Customer Deep Dive](Screenshots/02_Customer_Deep_Dive.png)
+1. Monitor billing, collections and outstanding receivables.
+2. Analyse aging and delinquency exposure.
+3. Identify high-risk customers and concentrated overdue balances.
+4. Support invoice-level collection priorities.
+5. Analyse disputed receivables by category and owner.
+6. Provide management views for collection and dispute follow-up.
 
 ---
 
-## 3. Dispute Operations
+## Methodology and Definitions
 
-Focuses on the operational side of receivables management.
+- **As-of date:** 31 December 2025. All balances, aging buckets and overdue figures use this date. Payments dated later are excluded from outstanding balances.
+- **AR Outstanding:** invoice amount less payments received by the as-of date.
+- **Overdue AR:** outstanding balance past its due date at the as-of date.
+- **Aging buckets:** days past due, in the bands Current, 1–30, 31–60, 61–90 and 90+.
+- **Collection Efficiency:** total collected ÷ total invoiced.
+- **DSO:** AR outstanding ÷ total invoiced × 731 days, the number of days from 1 January 2024 to 31 December 2025 inclusive.
+- **Disputed AR:** outstanding balance on invoices whose dispute status is Open.
 
-Key analysis includes:
+Full formulas are in [`documentation/dax_measures.md`](documentation/dax_measures.md).
 
-* Invoice dispute activity
-* Dispute categories
-* Dispute status
-* Customer-level dispute exposure
-* Collection and resolution activity
-* Operational areas requiring attention
+**Tools:** Python (NumPy for seeded generation, pandas for preparation and checks) and Power BI Desktop (data model, DAX measures, three report pages).
 
-![Dispute Operations](Screenshots/03_Dispute_Operations.png)
+**Data model:** two fact tables (invoices and payments), two dimensions (customers and dispute reasons), and a date table. Payments link to invoices. Invoices link to customers and dispute reasons.
 
----
-
-# Analytical Methodology
-
-The project follows an end-to-end analytics workflow:
-
-**Business Problem → Data Generation → Data Validation → Python Analysis → Power BI Data Model → DAX Measures → Dashboard → Insights → Recommendations**
-
-### 1. Business Problem
-
-Defined the Accounts Receivable and working-capital problem from a finance and collections perspective.
-
-### 2. Data Generation
-
-Created a synthetic transactional dataset representing invoices, payments, customers, and dispute information.
-
-### 3. Data Validation
-
-Validated relationships, amounts, dates, payment records, customer mappings, and transactional consistency.
-
-### 4. Python Analysis
-
-Used Python, Pandas, and NumPy for exploratory analysis and data validation before dashboard development.
-
-### 5. Power BI Data Model
-
-Structured the data into dimension and fact tables to support customer, invoice, payment, and dispute analysis.
-
-### 6. DAX
-
-Created calculated measures and analytical KPIs for receivables and collection performance.
-
-### 7. Dashboard
-
-Built an interactive Power BI report covering executive performance, customer analysis, and dispute operations.
-
-### 8. Insights & Recommendations
-
-Used the analytical results to identify collection risks, customer concentration, aging patterns, and operational priorities.
+**Checks performed:** keys are unique; every payment matches an invoice; no payment predates its invoice; due dates match payment terms; no invoice is overpaid; invoiced minus collected equals outstanding.
 
 ---
 
-# Data Model
+## Dashboard
 
-The project uses a simple finance-oriented analytical model consisting of:
-
-* **Dim_Customer** — customer master information
-* **Dim_Dispute_Reason** — dispute classification
-* **Fact_AR_Invoices** — invoice-level receivables transactions
-* **Fact_AR_Payments** — payment transactions
-
-This structure separates transactional facts from descriptive dimensions and supports customer-level and operational AR analysis.
+1. **[Executive Overview](screenshots/01_Executive_Overview.png):** headline KPIs, monthly billings against collections, current versus overdue AR, aging distribution, disputed AR by category. Slicer: year.
+2. **[Customer Risk & Delinquency Deep Dive](screenshots/02_Customer_Deep_Dive.png):** overdue customers and exposure, overdue AR by risk tier, top 10 delinquent accounts, and a prioritised collection table.
+3. **[Dispute & Collections Operations](screenshots/03_Dispute_Operations.png):** disputed AR by operational owner, dispute categories by aging bucket, and the escalated dispute queue, which lists open disputes only.
 
 ---
 
-# Tools & Technologies
-
-| Tool                 | Purpose                                            |
-| -------------------- | -------------------------------------------------- |
-| **Power BI Desktop** | Dashboard development, data modeling and reporting |
-| **DAX**              | Financial and analytical measures                  |
-| **Python**           | Data preparation and exploratory analysis          |
-| **Pandas**           | Data manipulation and validation                   |
-| **NumPy**            | Numerical analysis                                 |
-| **CSV**              | Source data format                                 |
-
----
-
-# Dataset
-
-The project uses **synthetic FY2025 Accounts Receivable data** created specifically for this portfolio project.
-
-The dataset represents realistic finance scenarios involving:
-
-* Customers
-* Invoices
-* Payments
-* Outstanding balances
-* Overdue receivables
-* Aging categories
-* Payment behavior
-* Invoice disputes
-
-No real company or customer information is used.
-
----
-
-# Repository Structure
+## Repository Structure
 
 ```text
 ar-working-capital-analytics/
 ├── README.md
-├── data/
-│   └── raw/
-│       ├── Dim_Customer.csv
-│       ├── Dim_Dispute_Reason.csv
-│       ├── Fact_AR_Invoices.csv
-│       └── Fact_AR_Payments.csv
-├── python/
-│   └── 01_generate_data.py
-├── powerbi/
+├── dashboard/
 │   └── AR_Working_Capital_Analytics.pbix
+├── data/
+│   ├── raw/
+│   │   ├── Dim_Customer.csv
+│   │   ├── Dim_Dispute_Reason.csv
+│   │   ├── Fact_AR_Invoices.csv
+│   │   └── Fact_AR_Payments.csv
+│   └── processed/
+│       └── Dim_dates.csv
 ├── documentation/
-│   ├── dax_measures.md
-│   └── data_dictionary.md
-└── Screenshots/
-    ├── Page1_Executive_Overview.png
-    ├── Page2_Customer_Deep_Dive.png
-    └── Page3_Dispute_Operations.png
+│   ├── data_dictionary.md
+│   └── dax_measures.md
+├── script/
+│   └── 01_generate_data.py
+└── screenshots/
+    ├── 01_Executive_Overview.png
+    ├── 02_Customer_Deep_Dive.png
+    └── 03_Dispute_Operations.png
 ```
 
 ---
 
-# Reproduction
-
-To regenerate the synthetic dataset:
+## How to Reproduce
 
 ```bash
-cd python
-python 01_generate_data.py
+pip install numpy pandas
+python script/01_generate_data.py
 ```
 
-The generated CSV files are stored under:
+The script writes the four raw tables to `data/raw/` using seed 42.
 
-```text
-data/raw/
-```
-
-For the analytical workflow:
-
-1. Run the Python data-generation script.
-2. Review the generated datasets.
-3. Open the Power BI file.
-4. Refresh the data if required.
-5. Explore the three dashboard pages.
+**Dashboard:** open `dashboard/AR_Working_Capital_Analytics.pbix` in Power BI Desktop. If the file path does not resolve, point each source to the matching file in `data/` (Home > Transform data > Data source settings).
 
 ---
 
-# Documentation
+## Limitations
 
-Additional project documentation is available in the repository:
-
-* [DAX Measures](documentation/dax_measures.md)
-* [Data Dictionary](documentation/data_dictionary.md)
-
----
-
-# Business Value
-
-An Accounts Receivable analytics solution can help finance and collections teams move from basic receivables reporting toward more structured collection management.
-
-The analysis supports:
-
-* Better visibility into outstanding receivables
-* Identification of overdue exposure
-* Customer-level collection prioritization
-* Monitoring of payment behavior
-* Dispute management
-* Working-capital visibility
-* Data-driven collection decisions
+- **Simulated data.** Payment behaviour, risk tiers and disputes are set by fixed probabilities in the generator.
+- **Payments after the cutoff.** The generator records payments up to about March 2026. Invoices from late 2025 that would have been paid later show as unpaid at 31 December 2025.
+- **Snapshot view only.** There is no time series of aging.
+- **Open disputes are unpaid by construction.**
+- **No cash-application detail.** No partial-payment reasons, credit notes or write-offs.
+- **Risk tiers are randomly assigned** in the generator, so their weak link to overdue balances reflects how the data was built.
 
 ---
 
-# Project Scope
+## Disclaimer
 
-This is a **simulated portfolio project** created for demonstrating finance-domain analytics, Power BI reporting, Python-based analysis, and business problem-solving skills.
-
-The company, customers, transactions, and business scenarios are fictional.
+This is a portfolio project using simulated data. The company, customers, invoices, payments and scenarios are fictional. Results describe this dataset only and should not be read as evidence about any real organisation.
 
 ---
 
-## Author
-
-**Sarthak Jaykar**
-B.Tech Computer Science + MBA Business Analytics
-
-[GitHub](https://github.com/sarthak-jaykar) · [LinkedIn](https://www.linkedin.com/in/sarthak-jaykar/)
+**Author:** [Sarthak Jaykar](https://www.linkedin.com/in/sarthak-jaykar/)
