@@ -147,4 +147,5 @@ This is a portfolio project using simulated data. The company, customers, invoic
 
 ---
 
-**Author:** [Sarthak Jaykar](https://www.linkedin.com/in/sarthak-jaykar/)
+**Author:** [Sarthak Jaykar](https://www.linkedin.com/in/sarthak-jaykar/)  
+[GitHub](https://github.com/sarthak-jaykar)
