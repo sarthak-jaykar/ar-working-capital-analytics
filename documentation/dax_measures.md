@@ -1,112 +1,121 @@
-# DAX Measures Reference — Accounts Receivable \& Working Capital Analytics
+# DAX Measures Reference — Accounts Receivable & Working Capital Analytics
 
-This document records the principal business measures used by the Accounts Receivable and Working Capital Analytics dashboard.
+This document records the intended business definitions and measure patterns for the Accounts Receivable and Working Capital Analytics dashboard.
 
-> \*\*Validation note:\*\* The current Power BI model is scheduled for a metric/date-consistency review. This reference documents the intended business definitions and measure architecture; numerical outputs will be revalidated before the final portfolio release.
+> **Validation status:** The Power BI report file has not been opened and inspected in Power BI Desktop during this repository update. The definitions below are therefore a reference specification, not confirmation that the PBIX measures and visuals implement them. Final model-level verification remains outstanding.
 
-\---
+---
 
-## 1\. Collections \& Receivables Metrics
+## 1. Collections & Receivables Metrics
 
 ### Total Invoiced
 
 **Business definition:** Total monetary value of invoices issued within the current filter context.
 
-```DAX
+```dax
 Total Invoiced =
-SUM(Fact\_AR\_Invoices\[Invoice\_Amount\_USD])
+SUM ( Fact_AR_Invoices[Invoice_Amount_USD] )
 ```
 
 ### Total Collected
 
 **Business definition:** Total cash payments recorded against AR invoices.
 
-```DAX
+```dax
 Total Collected =
-SUM(Fact\_AR\_Payments\[Amount\_Paid\_USD])
+SUM ( Fact_AR_Payments[Amount_Paid_USD] )
 ```
 
 ### AR Outstanding
 
-**Business definition:** Uncollected invoice value remaining after recorded payments.
+**Business definition:** Uncollected invoice value remaining after payments received by the selected as-of date.
 
-The final implementation should reconcile invoice balances against the payment fact table rather than relying on an undocumented source column.
+**Reference logic:** For each invoice in scope, subtract payments recorded on or before the as-of date from the invoice amount. Sum the remaining invoice balances. Payments after the as-of date must not reduce the snapshot balance.
 
 ### Collection Efficiency %
 
-**Business definition:** Collected cash as a proportion of invoiced value.
+**Business definition:** Collected cash as a proportion of total invoiced value.
 
-```DAX
+```dax
 Collection Efficiency % =
-DIVIDE(\[Total Collected], \[Total Invoiced], 0)
+DIVIDE ( [Total Collected], [Total Invoiced], 0 )
 ```
 
-\---
+---
 
-## 2\. Aging \& Delinquency Metrics
+## 2. Aging & Delinquency Metrics
 
 ### Overdue AR
 
-**Business definition:** Outstanding receivables whose invoices are past their contractual due date within the selected as-of context.
+**Business definition:** Outstanding receivables whose invoice due date is earlier than the selected as-of date.
 
-The final implementation should use a consistent aging/as-of date across AR balance and aging measures.
+**Reference logic:** Calculate the unpaid balance at the same as-of date used for AR Outstanding, then include only invoices whose due date has passed.
 
 ### Current AR
 
 **Business definition:** Outstanding receivables that remain within payment terms at the selected as-of date.
 
+**Reference logic:** Calculate the unpaid balance at the same as-of date used for AR Outstanding, then include invoices whose due date has not passed.
+
 ### Overdue AR %
 
 **Business definition:** Overdue outstanding receivables as a proportion of total outstanding AR.
 
-```DAX
+```dax
 Overdue AR % =
-DIVIDE(\[Overdue AR], \[AR Outstanding], 0)
+DIVIDE ( [Overdue AR], [AR Outstanding], 0 )
 ```
 
 ### Days Sales Outstanding (DSO)
 
-**Business definition:** A working-capital efficiency metric estimating the average number of days required to collect receivables.
+**Business definition:** Period-end AR outstanding expressed as a number of days of invoiced sales for the full FY2024–FY2025 reporting period.
 
-The final DSO implementation must be validated against the chosen business definition and date basis before release.
+```dax
+DSO =
+DIVIDE ( [AR Outstanding], [Total Invoiced], 0 ) * 731
+```
 
-\---
+**Date basis:** 1 January 2024 through 31 December 2025 inclusive (731 days). The README reports DSO as 104.7 days using the 31 December 2025 AR snapshot and total invoiced value for this two-year period.
 
-## 3\. Aging Bucket Measures
+**Interpretation:** This is a period-end snapshot DSO calculation. It uses period-end AR rather than average AR; it should not be described as an average-balance DSO calculation.
+
+---
+
+## 3. Aging Bucket Measures
 
 The dashboard uses the following conceptual aging buckets:
 
-* Current
-* 1–30 Days
-* 31–60 Days
-* 61–90 Days
-* 90+ Days
+- Current
+- 1–30 Days
+- 31–60 Days
+- 61–90 Days
+- 90+ Days
 
 Example measure pattern:
 
-```DAX
+```dax
 AR 90+ Days =
-CALCULATE(
-    \[AR Outstanding],
-    Fact\_AR\_Invoices\[Aging\_Bucket] = "90+ Days"
+CALCULATE (
+    [AR Outstanding],
+    Fact_AR_Invoices[Aging_Bucket] = "90+ Days"
 )
 ```
 
-The final model should ensure that the aging bucket is calculated from the same as-of date used for the corresponding AR balance.
+The aging bucket must be calculated from the same as-of date used for the corresponding AR balance.
 
-\---
+---
 
-## 4\. Customer Risk Metrics
+## 4. Customer Risk Metrics
 
 ### Overdue Customers Count
 
 **Business definition:** Distinct customers with overdue outstanding receivables.
 
-```DAX
+```dax
 Overdue Customers Count =
-CALCULATE(
-    DISTINCTCOUNT(Fact\_AR\_Invoices\[Customer\_Key]),
-    Fact\_AR\_Invoices\[Aging\_Bucket] IN {
+CALCULATE (
+    DISTINCTCOUNT ( Fact_AR_Invoices[Customer_Key] ),
+    Fact_AR_Invoices[Aging_Bucket] IN {
         "1-30 Days",
         "31-60 Days",
         "61-90 Days",
@@ -115,21 +124,21 @@ CALCULATE(
 )
 ```
 
-Customer-level analysis is supported through the relationship between `Fact\_AR\_Invoices` and `Dim\_Customer`.
+Customer-level analysis is supported through the relationship between `Fact_AR_Invoices` and `Dim_Customer`.
 
-\---
+---
 
-## 5\. Dispute Operations Metrics
+## 5. Dispute Operations Metrics
 
 ### Disputed AR Amount
 
 **Business definition:** Outstanding receivables associated with active/open disputes.
 
-```DAX
+```dax
 Disputed AR Amount =
-CALCULATE(
-    \[AR Outstanding],
-    Fact\_AR\_Invoices\[Dispute\_Status] = "Open"
+CALCULATE (
+    [AR Outstanding],
+    Fact_AR_Invoices[Dispute_Status] = "Open"
 )
 ```
 
@@ -137,47 +146,49 @@ CALCULATE(
 
 **Business definition:** Active disputed AR as a proportion of total outstanding AR.
 
-```DAX
+```dax
 Disputed AR % =
-DIVIDE(\[Disputed AR Amount], \[AR Outstanding], 0)
+DIVIDE ( [Disputed AR Amount], [AR Outstanding], 0 )
 ```
 
 ### Open Disputes Count
 
 **Business definition:** Count of invoice-level records currently marked as open disputes.
 
-```DAX
+```dax
 Open Disputes Count =
-CALCULATE(
-    COUNTROWS(Fact\_AR\_Invoices),
-    Fact\_AR\_Invoices\[Dispute\_Status] = "Open"
+CALCULATE (
+    COUNTROWS ( Fact_AR_Invoices ),
+    Fact_AR_Invoices[Dispute_Status] = "Open"
 )
 ```
 
-\---
+---
 
-## 6\. Measure Design Principles
+## 6. Measure Design Principles
 
 The measure layer is designed around four finance questions:
 
-1. **How much was billed?**
-2. **How much cash was collected?**
-3. **How much receivable exposure remains and how severe is the aging?**
-4. **How much working capital is tied up in disputes?**
+1. How much was billed?
+2. How much cash was collected?
+3. How much receivable exposure remains, and how severe is the aging?
+4. How much working capital is tied up in disputes?
 
-Measures should remain filter-aware so users can analyze the same KPIs by customer, segment, risk category, aging bucket, dispute category, and operational owner.
+Measures should remain filter-aware so users can analyze the same KPIs by customer, segment, risk category, aging bucket, dispute category and operational owner.
 
-\---
+All snapshot balances, aging measures and overdue calculations must use a consistent as-of date.
 
-## 7\. Final Validation Checklist
+---
 
-Before the final portfolio release, validate:
+## 7. Final Validation Checklist
 
-* Invoice totals reconcile with the source invoice table.
-* Payment totals reconcile with the payment fact table.
-* AR outstanding reconciles to invoice value less applicable payments.
-* Aging and AR balances use the same as-of date.
-* DSO uses the intended business definition and date basis.
-* Dispute visuals are restricted to the intended dispute status.
-* Customer concentration claims are calculated from the same overdue-AR definition used by the dashboard.
+Before treating the Power BI model as verified, confirm in Power BI Desktop:
 
+- Invoice totals reconcile with the source invoice table.
+- Payment totals reconcile with the payment fact table.
+- AR outstanding reconciles to invoice value less applicable payments as of 31 December 2025.
+- Payments dated after the cutoff do not reduce the 31 December 2025 outstanding balance.
+- Aging and AR balances use the same as-of date.
+- DSO uses the documented 731-day reporting period and period-end AR basis.
+- Dispute visuals are restricted to the intended `Open` dispute status.
+- Customer concentration claims use the same overdue-AR definition as the dashboard.
